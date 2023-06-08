@@ -226,7 +226,7 @@ class MagentoClientService extends TransactionBaseService {
   }
 
   async retrieveInventoryData (sku: string) : Promise<AxiosResponse<any, any>> {
-    return this.sendRequest(`/stockItems/${sku}`);
+    return this.sendRequest(`/stockItems/${encodeURIComponent(sku)}`);
   }
 
   async retrieveSimpleProductsAsVariants (productIds: string[]) : Promise<Record<string, any>[]> {
