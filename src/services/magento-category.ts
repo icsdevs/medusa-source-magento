@@ -10,8 +10,8 @@ type InjectedDependencies = {
 }
 
 class MagentoCategoryService extends TransactionBaseService {
-  protected manager_: EntityManager;
-  protected transactionManager_: EntityManager;
+  declare protected manager_: EntityManager;
+  declare protected transactionManager_: EntityManager;
   protected magentoClientService_: MagentoClientService;
   protected productCollectionService_: ProductCollectionService;
 

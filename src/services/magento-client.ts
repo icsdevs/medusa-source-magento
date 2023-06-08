@@ -1,9 +1,8 @@
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import axios, { AxiosInstance, AxiosResponse, Method } from 'axios';
 
 import { EntityManager } from 'typeorm';
 import { Logger } from '@medusajs/medusa/dist/types/global';
 import { MedusaError } from 'medusa-core-utils';
-import { PluginOptions } from './magento';
 import { TransactionBaseService } from '@medusajs/medusa';
 import addOAuthInterceptor from 'axios-oauth-1.0a';
 
@@ -40,8 +39,8 @@ export enum MagentoProductTypes {
 }
 
 class MagentoClientService extends TransactionBaseService {
-  protected manager_: EntityManager;
-  protected transactionManager_: EntityManager;
+  declare protected manager_: EntityManager;
+  declare protected transactionManager_: EntityManager;
   protected logger_: Logger;
   protected apiBaseUrl_: string;
   protected options_: PluginOptions;
@@ -225,7 +224,7 @@ class MagentoClientService extends TransactionBaseService {
       })
   }
 
-  async retrieveInventoryData (sku: string) : Promise<AxiosResponse<any, any>> {
+  async retrieveInventoryData (sku: string) : Promise<AxiosResponse<any>> {
     return this.sendRequest(`/stockItems/${encodeURIComponent(sku)}`);
   }
 
@@ -252,7 +251,7 @@ class MagentoClientService extends TransactionBaseService {
     })
   }
 
-  async retrieveCategories (lastUpdatedTime?: string) : Promise<AxiosResponse<any, any>> {
+  async retrieveCategories (lastUpdatedTime?: string) : Promise<AxiosResponse<any>> {
     const searchCriteria: SearchCriteria = {
       currentPage: 1,
       filterGroups: [
@@ -279,7 +278,7 @@ class MagentoClientService extends TransactionBaseService {
     return this.sendRequest(`/categories/list?${this.formatSearchCriteriaQuery(searchCriteria)}`)
   }
 
-  async sendRequest (path: string, method: string = 'GET', data?: Record<string, any>) : Promise<AxiosResponse<any, any>> {
+  async sendRequest (path: string, method: Method = 'GET', data?: Record<string, any>) : Promise<AxiosResponse<any>> {
     return this.client_.request({
       url: `${this.apiBaseUrl_}${path}`,
       method,

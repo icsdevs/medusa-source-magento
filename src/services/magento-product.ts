@@ -1,7 +1,8 @@
-import { CurrencyService, Product, ProductCollectionService, ProductService, ProductStatus, ProductVariantService, ShippingProfileService, Store, StoreService, TransactionBaseService, Variant } from '@medusajs/medusa';
+import { CurrencyService, Product, ProductCollectionService, ProductService, ProductStatus, ProductVariantService, ShippingProfileService, Store, StoreService, TransactionBaseService, ProductVariant } from '@medusajs/medusa';
 import MagentoClientService, { MagentoProductTypes, PluginOptions } from './magento-client';
 
 import { EntityManager } from 'typeorm';
+import { CreateProductVariantInput } from '@medusajs/medusa/dist/types/product-variant';
 
 type InjectedDependencies = {
   productService: ProductService;
@@ -15,8 +16,8 @@ type InjectedDependencies = {
 }
 
 class MagentoProductService extends TransactionBaseService {
-  protected manager_: EntityManager;
-  protected transactionManager_: EntityManager;
+  declare protected manager_: EntityManager;
+  declare protected transactionManager_: EntityManager;
   protected options_: PluginOptions;
   protected productService_: ProductService;
   protected magentoClientService_: MagentoClientService;
@@ -60,7 +61,7 @@ class MagentoProductService extends TransactionBaseService {
         return this.update(productData, existingProduct);
       } else {
         //check if it's a variant
-        const existingVariant: Variant = await this.productVariantService_
+        const existingVariant: ProductVariant = await this.productVariantService_
           .withTransaction(manager)
           .retrieveBySKU(productData.sku)
           .catch(() => undefined)
@@ -122,7 +123,7 @@ class MagentoProductService extends TransactionBaseService {
           const variantData = this.normalizeVariant(v, normalizedProduct.options)
           await this.productVariantService_
             .withTransaction(manager)
-            .create(product.id, variantData)
+            .create(product.id, variantData as CreateProductVariantInput)
 
           if (v.media_gallery_entries) {
             //update products images with variant's images
@@ -137,7 +138,7 @@ class MagentoProductService extends TransactionBaseService {
 
         await this.productVariantService_
           .withTransaction(manager)
-          .create(product.id, variantData)
+          .create(product.id, variantData as CreateProductVariantInput)
 
       }
 
@@ -235,7 +236,7 @@ class MagentoProductService extends TransactionBaseService {
             //create variant
             await this.productVariantService_
               .withTransaction(manager)
-              .create(existingProduct.id, variantData)
+              .create(existingProduct.id, variantData as CreateProductVariantInput)
           }
 
           if (v.media_gallery_entries) {
@@ -265,7 +266,7 @@ class MagentoProductService extends TransactionBaseService {
         } else {
           await this.productVariantService_
             .withTransaction(manager)
-            .create(existingProduct.id, variantData)
+            .create(existingProduct.id, variantData as CreateProductVariantInput)
         }
       }
 
@@ -293,7 +294,7 @@ class MagentoProductService extends TransactionBaseService {
     })
   }
 
-  async updateVariant (productData: any, existingVariant: Variant): Promise<void> {
+  async updateVariant (productData: any, existingVariant: ProductVariant): Promise<void> {
     return this.atomicPhase_(async (manager: EntityManager) => {
 
       //retrieve store's currencies
@@ -333,7 +334,7 @@ class MagentoProductService extends TransactionBaseService {
 
   async getDefaultShippingProfile (): Promise<string> {
     if (!this.defaultShippingProfileId.length) {
-      this.defaultShippingProfileId = await this.shippingProfileService_.retrieveDefault();
+      this.defaultShippingProfileId = (await this.shippingProfileService_.retrieveDefault()).id;
     }
 
     return this.defaultShippingProfileId;

@@ -162,8 +162,8 @@ class ImportStrategy extends AbstractBatchJobStrategy {
   buildTemplate(): Promise<string> {
     throw new Error('Method not implemented.')
   }
-  protected manager_: EntityManager
-  protected transactionManager_: EntityManager
+  declare protected manager_: EntityManager
+  declare protected transactionManager_: EntityManager
 
 }
 
