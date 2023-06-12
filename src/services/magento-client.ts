@@ -224,9 +224,6 @@ class MagentoClientService extends TransactionBaseService {
   }
 
   async retrieveInventoryData(sku: string) {
-    console.error("Skipping importing inventory data");
-    return null;
-
     try {
       const response = await this.sendRequest(`/stockItems/${encodeURIComponent(sku)}`);
       return response.data;
