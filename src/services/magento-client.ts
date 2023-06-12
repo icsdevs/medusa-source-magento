@@ -70,7 +70,7 @@ class MagentoClientService extends TransactionBaseService {
       tokenSecret: options.access_token_secret
     });
 
-    this.client_.interceptors.request.use(null, (error) => {
+    /*this.client_.interceptors.request.use(null, (error) => {
       console.log(error);
       throw new MedusaError(
         MedusaError.Types.UNEXPECTED_STATE,
@@ -84,7 +84,7 @@ class MagentoClientService extends TransactionBaseService {
         MedusaError.Types.UNEXPECTED_STATE,
         error.response?.data?.message || error.request?.data?.message || error.message || "An error occurred while sending the request."
       )
-    })
+    })*/
 
     this.defaultImagePrefix_ = options.image_prefix
   }
@@ -226,10 +226,15 @@ class MagentoClientService extends TransactionBaseService {
   async retrieveInventoryData(sku: string) {
     try {
       const response = await this.sendRequest(`/stockItems/${encodeURIComponent(sku)}`);
+      console.log(`Successfully retrieved stock data: ${JSON.stringify(response.data)}`);
       return response.data;
     } catch (error) {
       console.error(`Failed retrieving stock data for ${sku}`);
-      return null;
+      return {
+        qty: 0,
+        backorders: 0,
+        manage_stock: true,
+      };
     }
   }
 
