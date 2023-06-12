@@ -31,7 +31,7 @@ class ImportStrategy extends AbstractBatchJobStrategy {
 
   constructor(container: InjectedDependencies) {
     super(container);
-    
+
     this.manager_ = container.manager;
     this.storeService_ = container.storeService;
     this.magentoProductService_ = container.magentoProductService;
@@ -47,7 +47,7 @@ class ImportStrategy extends AbstractBatchJobStrategy {
       const batchJob = (await this.batchJobService_
         .withTransaction(transactionManager)
         .retrieve(batchJobId))
-  
+
       await this.batchJobService_
         .withTransaction(transactionManager)
         .update(batchJob, {
@@ -61,7 +61,7 @@ class ImportStrategy extends AbstractBatchJobStrategy {
   async processJob(batchJobId: string): Promise<void> {
     const batchJob = (await this.batchJobService_
       .retrieve(batchJobId))
-    
+
     let store: Store
 
     try {
@@ -70,7 +70,7 @@ class ImportStrategy extends AbstractBatchJobStrategy {
       this.logger_.info('Skipping Magento import since no store is created in Medusa.');
       return;
     }
-    
+
     this.logger_.info('Importing categories from Magento...')
     const lastUpdatedTime = await this.getBuildTime(store)
 
@@ -81,7 +81,7 @@ class ImportStrategy extends AbstractBatchJobStrategy {
       return this.magentoCategoryService_
         .create(category);
     })
-    
+
     if (data.items.length) {
       this.logger_.info(`${data.items.length} categories have been imported or updated successfully.`)
     } else {
@@ -100,12 +100,17 @@ class ImportStrategy extends AbstractBatchJobStrategy {
 
     //retrieve simple products to insert those that don't belong to a configurable product
     const simpleProducts = await this.magentoClientService_.retrieveProducts(MagentoProductTypes.SIMPLE, lastUpdatedTime);
+    this.logger_.info("All products successfully retrieved");
 
     for (let product of simpleProducts) {
-      await this.magentoProductService_
-        .create(product);
+      try {
+        await this.magentoProductService_
+            .create(product);
+      } catch (error) {
+        this.logger_.error("Error creating product", error);
+      }
     }
-    
+
     if (products.length || simpleProducts.length) {
       this.logger_.info(`${products.length + simpleProducts.length} products have been imported or updated successfully.`)
     } else {
@@ -117,7 +122,7 @@ class ImportStrategy extends AbstractBatchJobStrategy {
 
   async getBuildTime(store?: Store|null): Promise<string|null> {
     let buildtime = null
-    
+
     try {
       if (!store) {
         store = await this.storeService_.retrieve()
