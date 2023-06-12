@@ -150,7 +150,7 @@ class MagentoClientService extends TransactionBaseService {
           }
 
           if (type === MagentoProductTypes.SIMPLE) {
-              data.items[i].stockData = this.retrieveInventoryData(data.items[i].sku)
+              data.items[i].stockData = await this.retrieveInventoryData(data.items[i].sku)
           }
         }
 
@@ -223,7 +223,7 @@ class MagentoClientService extends TransactionBaseService {
       })
   }
 
-  retrieveInventoryData (sku: string) {
+  async retrieveInventoryData(sku: string) {
     try {
       const response = await this.sendRequest(`/stockItems/${encodeURIComponent(sku)}`);
       return response.data;
@@ -246,7 +246,7 @@ class MagentoClientService extends TransactionBaseService {
     .then(async (products) => {
       return await Promise.all(products.map(async (variant) => {
         //get stock item of that variant
-        const { data } = this.retrieveInventoryData(variant.sku)
+        const { data } = await this.retrieveInventoryData(variant.sku)
 
         return {
           ...variant,
