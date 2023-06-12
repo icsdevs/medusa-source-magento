@@ -88,26 +88,33 @@ class ImportStrategy extends AbstractBatchJobStrategy {
       this.logger_.info(`No categories have been imported or updated.`)
     }
 
-    this.logger_.info('Importing products from Magento...')
+    this.logger_.info('Importing configurable products from Magento...')
 
     //retrieve configurable products
     const products = await this.magentoClientService_.retrieveProducts(MagentoProductTypes.CONFIGURABLE, lastUpdatedTime);
+    this.logger_.info("All configurable products successfully retrieved");
 
     for (let product of products) {
-      await this.magentoProductService_
-        .create(product);
+      try {
+        await this.magentoProductService_
+          .create(product);
+      } catch (error) {
+        this.logger_.error("Error creating configurable product", error);
+      }
     }
+
+    this.logger_.info('Importing simple products from Magento...')
 
     //retrieve simple products to insert those that don't belong to a configurable product
     const simpleProducts = await this.magentoClientService_.retrieveProducts(MagentoProductTypes.SIMPLE, lastUpdatedTime);
-    this.logger_.info("All products successfully retrieved");
+    this.logger_.info("All simple products successfully retrieved");
 
     for (let product of simpleProducts) {
       try {
         await this.magentoProductService_
             .create(product);
       } catch (error) {
-        this.logger_.error("Error creating product", error);
+        this.logger_.error("Error creating simple product", error);
       }
     }
 
