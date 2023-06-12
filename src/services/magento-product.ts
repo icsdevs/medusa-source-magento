@@ -28,7 +28,7 @@ class MagentoProductService extends TransactionBaseService {
   protected storeServices_: StoreService;
   protected currencies: string[];
   protected defaultShippingProfileId: string;
-  
+
   constructor(container: InjectedDependencies, options: PluginOptions) {
     super(container);
     this.manager_ = container.manager;
@@ -104,11 +104,11 @@ class MagentoProductService extends TransactionBaseService {
           .retrieve(product.id, {
             relations: ['options']
           });
-  
+
         //attached option id to normalized options
         normalizedProduct.options = normalizedProduct.options.map((option) => {
           const productOption = product.options.find((o) => o.title === option.title);
-          
+
           return {
             ...option,
             id: productOption.id
@@ -118,7 +118,7 @@ class MagentoProductService extends TransactionBaseService {
         //retrieve simple products as variants
         const variants = await this.magentoClientService_
           .retrieveSimpleProductsAsVariants(productData.extension_attributes?.configurable_product_links);
-        
+
         for (let v of variants) {
           const variantData = this.normalizeVariant(v, normalizedProduct.options)
           await this.productVariantService_
@@ -130,7 +130,7 @@ class MagentoProductService extends TransactionBaseService {
             productImages.push(...v.media_gallery_entries.map((entry) => entry.url));
           }
         }
-        
+
       } else {
         //insert a default variant for a simple product
 
@@ -158,7 +158,7 @@ class MagentoProductService extends TransactionBaseService {
 
       //retrieve store's currencies
       await this.getCurrencies();
-      
+
       const normalizedProduct = this.normalizeProduct(productData);
       let productOptions = existingProduct.options;
 
@@ -170,7 +170,7 @@ class MagentoProductService extends TransactionBaseService {
         //retrieve options
         productData.extension_attributes.configurable_product_options.forEach(async (item) => {
           const existingOption = productOptions.find((o) => o.metadata.magento_id == item.id)
-          
+
           if (!existingOption) {
             //add option
             await this.productService_
@@ -186,7 +186,7 @@ class MagentoProductService extends TransactionBaseService {
             .withTransaction(manager)
             .updateOption(existingProduct.id, existingOption.id, normalizedOption)
         })
-        
+
         //check if there are options that should be deleted
         const optionsToDelete = productOptions.filter(
           (o) => !productData.extension_attributes?.configurable_product_options.find((magento_option) => magento_option.id == o.metadata.magento_id))
@@ -221,10 +221,10 @@ class MagentoProductService extends TransactionBaseService {
         //retrieve simple products as variants
         const variants = await this.magentoClientService_
           .retrieveSimpleProductsAsVariants(productData.extension_attributes.configurable_product_links);
-        
+
         for (let v of variants) {
           const variantData = await this.normalizeVariant(v, productOptions)
-          
+
           //check if variant exists
           const existingVariant = existingProduct.variants.find((variant) => variant.metadata.magento_id === v.id)
           if (existingVariant) {
@@ -243,7 +243,7 @@ class MagentoProductService extends TransactionBaseService {
             productImages.push(...v.media_gallery_entries.map((entry) => entry.url))
           }
         }
-        
+
         //check if any variants should be deleted
         const variantsToDelete = existingProduct.variants.filter(
           (v) => productData.extension_attributes.configurable_product_links.indexOf(v.metadata.magento_id) === -1
@@ -311,7 +311,7 @@ class MagentoProductService extends TransactionBaseService {
           update[key] = variantData[key]
         }
       }
-      
+
       if (Object.values(update).length) {
         await this.productVariantService_
             .withTransaction(manager)
@@ -357,7 +357,7 @@ class MagentoProductService extends TransactionBaseService {
     const [_, count] = await this.productCollectionService_
       .withTransaction(manager)
       .listAndCount()
-      
+
     const existingCollections = await this.productCollectionService_
     .withTransaction(manager)
     .list({}, {
@@ -408,7 +408,7 @@ class MagentoProductService extends TransactionBaseService {
       inventory_quantity: variant.stockData.qty,
       allow_backorder: variant.stockData.backorders > 0,
       manage_inventory: variant.stockData.manage_stock,
-      weight: variant.weight || 0,
+      weight: variant.weight ? Math.floor(variant.weight * 1000) : 0,
       options: options?.map((option) => {
         const variantOption = variant.custom_attributes?.find((attribute) => attribute.attribute_code.toLowerCase() === option.title.toLowerCase())
         if (variantOption) {
@@ -447,11 +447,11 @@ class MagentoProductService extends TransactionBaseService {
     if ((str===null) || (str==='')) {
       return '';
     }
-    
+
     str = str.toString();
-          
-    // Regular expression to identify HTML tags in 
-    // the input string. Replacing the identified 
+
+    // Regular expression to identify HTML tags in
+    // the input string. Replacing the identified
     // HTML tag with a null string.
     return str.replace( /(<([^>]+)>)/ig, '');
   }
