@@ -150,13 +150,7 @@ class MagentoClientService extends TransactionBaseService {
           }
 
           if (type === MagentoProductTypes.SIMPLE) {
-            try {
-              const response = await this.retrieveInventoryData(data.items[i].sku)
-              data.items[i].stockData = response.data;
-            } catch (error) {
-              console.error(`Failed retrieving stock data for ${data.items[i].sku}`);
-              data.items[i].stockData = null;
-            }
+              data.items[i].stockData = this.retrieveInventoryData(data.items[i].sku)
           }
         }
 
@@ -229,8 +223,14 @@ class MagentoClientService extends TransactionBaseService {
       })
   }
 
-  async retrieveInventoryData (sku: string) : Promise<AxiosResponse<any>> {
-    return this.sendRequest(`/stockItems/${encodeURIComponent(sku)}`);
+  retrieveInventoryData (sku: string) {
+    try {
+      const response = await this.sendRequest(`/stockItems/${encodeURIComponent(sku)}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Failed retrieving stock data for ${sku}`);
+      return null;
+    }
   }
 
   async retrieveSimpleProductsAsVariants (productIds: string[]) : Promise<Record<string, any>[]> {
@@ -246,7 +246,7 @@ class MagentoClientService extends TransactionBaseService {
     .then(async (products) => {
       return await Promise.all(products.map(async (variant) => {
         //get stock item of that variant
-        const { data } = await this.retrieveInventoryData(variant.sku)
+        const { data } = this.retrieveInventoryData(variant.sku)
 
         return {
           ...variant,
