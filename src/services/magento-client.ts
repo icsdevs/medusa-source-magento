@@ -48,7 +48,7 @@ class MagentoClientService extends TransactionBaseService {
   protected defaultStoreId_: string;
   protected defaultCurrencyCode_: string;
   protected defaultImagePrefix_: string;
-  
+
   constructor(container: InjectedDependencies, options: PluginOptions) {
     super(container);
     this.manager_ = container.manager
@@ -122,7 +122,7 @@ class MagentoClientService extends TransactionBaseService {
           value: filter.value,
           condition_type: filter.condition_type || 'eq'
         }));
-        
+
         searchCriteria.filterGroups.push(newFilterGroup)
       })
     }
@@ -135,7 +135,7 @@ class MagentoClientService extends TransactionBaseService {
         if (type === MagentoProductTypes.CONFIGURABLE) {
           options = await this.retrieveOptions();
         }
-        
+
         for (let i = 0; i < data.items.length; i++) {
           data.items[i].media_gallery_entries = data.items[i].media_gallery_entries?.map((entry) => {
             entry.url = `${this.defaultImagePrefix_}${entry.file}`
@@ -150,8 +150,13 @@ class MagentoClientService extends TransactionBaseService {
           }
 
           if (type === MagentoProductTypes.SIMPLE) {
-            const response = await this.retrieveInventoryData(data.items[i].sku)
-            data.items[i].stockData = response.data;
+            try {
+              const response = await this.retrieveInventoryData(data.items[i].sku)
+              data.items[i].stockData = response.data;
+            } catch (error) {
+              console.error(`Failed retrieving stock data for ${data.items[i].sku}`);
+              data.items[i].stockData = null;
+            }
           }
         }
 
