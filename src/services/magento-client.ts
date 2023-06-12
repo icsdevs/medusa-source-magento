@@ -137,7 +137,7 @@ class MagentoClientService extends TransactionBaseService {
         }
 
         for (let i = 0; i < data.items.length; i++) {
-          console.log(`Processing SKU ${data.items[i].sku}`);
+          console.log(`[${i}/${data.items.length}]: Processing SKU ${data.items[i].sku}`);
 
           data.items[i].media_gallery_entries = data.items[i].media_gallery_entries?.map((entry) => {
             entry.url = `${this.defaultImagePrefix_}${entry.file}`
