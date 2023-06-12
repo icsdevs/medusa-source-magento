@@ -57,7 +57,7 @@ class MagentoClientService extends TransactionBaseService {
     this.apiBaseUrl_ = `${options.magento_url}/rest/default/V1`
 
     this.client_ = axios.create({
-      timeout: 10000,
+      timeout: 30000,
       headers: {
         'Accept': 'application/json'
       },
