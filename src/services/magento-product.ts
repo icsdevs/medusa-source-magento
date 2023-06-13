@@ -381,7 +381,6 @@ class MagentoProductService extends TransactionBaseService {
   }
 
   normalizeProduct(product: Record<string, any>): any {
-    console.log(product.custom_attributes);
     return {
       title: product.name,
       handle: product.custom_attributes?.find((attribute) => attribute.attribute_code === 'url_key')?.value,
