@@ -398,6 +398,19 @@ class MagentoProductService extends TransactionBaseService {
   }
 
   normalizeVariant (variant: Record<string, any>, options?: Record<string, any>[]): Record<string, any> {
+    /**
+     * // have to loop around custom attributes in this really shitty way
+     *                 foreach ($item->custom_attributes as $customAttribute) {
+     *                     if ($customAttribute->attribute_code == 'description') {
+     *                         $product->description = $customAttribute->value;
+     *                     }
+     *                     if ($customAttribute->attribute_code == 'short_description') {
+     *                         $product->shortDescription = $customAttribute->value;
+     *                     }
+     *                 }
+     */
+    console.log(variant.custom_attributes);
+
     return {
       title: variant.name,
       prices: this.currencies.map((currency) => ({
@@ -419,7 +432,8 @@ class MagentoProductService extends TransactionBaseService {
         }
       }),
       metadata: {
-        magento_id: variant.id
+        magento_id: variant.id,
+        short_description: 'test',
       }
     }
   }
