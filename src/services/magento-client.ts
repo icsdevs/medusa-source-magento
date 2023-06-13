@@ -138,9 +138,8 @@ class MagentoClientService extends TransactionBaseService {
         }
 
         for (let i = 0; i < data.items.length; i++) {
-          if (data.items[i].sku != "162827") { continue; } // temporary
+          //if (data.items[i].sku != "162827") { continue; } // temporary
           console.log(`[${i}/${data.items.length}]: Processing SKU ${data.items[i].sku}`);
-          console.log(JSON.stringify(data.items[i].custom_attributes));
 
           data.items[i].media_gallery_entries = data.items[i].media_gallery_entries?.map((entry) => {
             entry.url = `${this.defaultImagePrefix_}${entry.file}`

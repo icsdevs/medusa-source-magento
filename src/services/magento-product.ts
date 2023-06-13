@@ -380,11 +380,15 @@ class MagentoProductService extends TransactionBaseService {
     return product;
   }
 
+  parseCustomAttributeValue(product: Record<string, any>, attributeCode: string): any {
+    return product.custom_attributes?.find((attribute) => attribute.attribute_code === attributeCode)?.value || '';
+  }
+
   normalizeProduct(product: Record<string, any>): any {
     return {
       title: product.name,
       handle: product.custom_attributes?.find((attribute) => attribute.attribute_code === 'url_key')?.value,
-      description: this.removeHtmlTags(product.custom_attributes?.find((attribute) => attribute.attribute_code === 'description')?.value || ''),
+      description: this.removeHtmlTags(this.parseCustomAttributeValue(product, 'description')),
       type: {
         value: product.type_id
       },
@@ -395,7 +399,12 @@ class MagentoProductService extends TransactionBaseService {
       options: [],
       collection_id: null,
       metadata: {
-        short_description: this.removeHtmlTags(product.custom_attributes?.find((attribute) => attribute.attribute_code === 'short_description')?.value || '')
+        short_description: this.removeHtmlTags(this.parseCustomAttributeValue(product, 'short_description')),
+        hardiness: this.parseCustomAttributeValue(product, 'hardiness'),
+        flower_colour: this.parseCustomAttributeValue(product, 'flower_colour'),
+        flowering_period: this.parseCustomAttributeValue(product, 'flowering_period'),
+        fast_slow_growing: this.parseCustomAttributeValue(product, 'fast_slow_growing'),
+        delivery_time_scale: this.parseCustomAttributeValue(product, 'delivery_time_scale'),
       }
     };
   }
