@@ -138,6 +138,7 @@ class MagentoClientService extends TransactionBaseService {
         }
 
         for (let i = 0; i < data.items.length; i++) {
+          if (i > 10) { continue; } // temporary
           console.log(`[${i}/${data.items.length}]: Processing SKU ${data.items[i].sku}`);
 
           data.items[i].media_gallery_entries = data.items[i].media_gallery_entries?.map((entry) => {
