@@ -1,11 +1,16 @@
 import MagentoClientService, { PluginOptions } from './magento-client';
-import { ProductCollection, ProductCollectionService, TransactionBaseService } from '@medusajs/medusa';
+import {
+  ProductCollection,
+  TransactionBaseService,
+  ProductCategoryService,
+} from '@medusajs/medusa';
 
 import { EntityManager } from 'typeorm';
 
 type InjectedDependencies = {
   magentoClientService: MagentoClientService;
-  productCollectionService: ProductCollectionService;
+  productCategoryService: ProductCategoryService;
+
   manager: EntityManager;
 }
 
@@ -13,34 +18,33 @@ class MagentoCategoryService extends TransactionBaseService {
   declare protected manager_: EntityManager;
   declare protected transactionManager_: EntityManager;
   protected magentoClientService_: MagentoClientService;
-  protected productCollectionService_: ProductCollectionService;
+  protected productCategoryService_: ProductCategoryService;
 
   constructor(container: InjectedDependencies, options: PluginOptions) {
     super(container);
 
     this.manager_ = container.manager;
     this.magentoClientService_ = container.magentoClientService;
-    this.productCollectionService_ = container.productCollectionService;
+    this.productCategoryService_ = container.productCategoryService;
   }
 
   async create (category: any): Promise<void> {
     return this.atomicPhase_(async (manager) => {
-      //check if a collection exists for the category
-      const existingCollection = await this.productCollectionService_
-        .withTransaction(manager)
-        .retrieveByHandle(this.getHandle(category))
-        .catch(() => undefined);
+      const existingCategory = await this.productCategoryService_
+          .withTransaction(manager)
+          .retrieveByHandle(this.getHandle(category))
+          .catch(() => undefined);
 
-      if (existingCollection) {
-        return this.update(category, existingCollection)
+      if (existingCategory) {
+        return this.update(category, existingCategory);
       }
 
       //create collection
-      const collectionData = this.normalizeCollection(category);
+      const categoryData = this.normalizeCollection(category);
 
-      await this.productCollectionService_
+      await this.productCategoryService_
         .withTransaction(manager)
-        .create(collectionData)
+        .create(categoryData)
     })
   }
 
@@ -57,7 +61,7 @@ class MagentoCategoryService extends TransactionBaseService {
       }
 
       if (Object.values(update).length) {
-        await this.productCollectionService_
+        await this.productCategoryService_
             .withTransaction(manager)
             .update(existingCollection.id, update)
       }
@@ -66,7 +70,7 @@ class MagentoCategoryService extends TransactionBaseService {
 
   normalizeCollection (category: any): any {
     return {
-      title: category.name,
+      name: category.name,
       handle: category.custom_attributes.find((attribute) => attribute.attribute_code === 'url_key')?.value,
       metadata: {
         magento_id: category.id

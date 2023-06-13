@@ -71,15 +71,13 @@ class ImportStrategy extends AbstractBatchJobStrategy {
       return;
     }
 
-    this.logger_.info('Importing categories from Magento...')
     const lastUpdatedTime = await this.getBuildTime(store)
 
-    //retrieve categories
-    const { data } = await this.magentoClientService_.retrieveCategories(lastUpdatedTime);
-
+    // retrieve categories
+    this.logger_.info('Importing categories from Magento...');
+    const { data } = await this.magentoClientService_.retrieveCategories();//lastUpdatedTime);
     data.items.map(async (category) => {
-      return this.magentoCategoryService_
-        .create(category);
+      return this.magentoCategoryService_.create(category);
     })
 
     if (data.items.length) {
@@ -98,11 +96,10 @@ class ImportStrategy extends AbstractBatchJobStrategy {
       delivery_time_scale: await this.magentoClientService_.getAttribute('delivery_time_scale'),
     };
 
-    //retrieve configurable products
+    // retrieve configurable products
     this.logger_.info('Importing configurable products from Magento...');
     const products = await this.magentoClientService_.retrieveProducts(MagentoProductTypes.CONFIGURABLE, lastUpdatedTime);
     this.logger_.info("All configurable products successfully retrieved");
-
     for (let product of products) {
       try {
         await this.magentoProductService_.create(product, attributeData);
@@ -111,11 +108,10 @@ class ImportStrategy extends AbstractBatchJobStrategy {
       }
     }
 
-    //retrieve simple products to insert those that don't belong to a configurable product
+    // retrieve simple products to insert those that don't belong to a configurable product
     this.logger_.info('Importing simple products from Magento...');
     const simpleProducts = await this.magentoClientService_.retrieveProducts(MagentoProductTypes.SIMPLE, lastUpdatedTime);
     this.logger_.info("All simple products successfully retrieved");
-
     for (let product of simpleProducts) {
       try {
         await this.magentoProductService_.create(product, attributeData);

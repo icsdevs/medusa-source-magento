@@ -389,7 +389,7 @@ class MagentoProductService extends TransactionBaseService {
     }
 
     if (attributeInfo.frontend_input === 'select') {
-      return attributeInfo.options.find(item => item.value === value).label;
+      return attributeInfo.options.find(item => item.value === value).label.trim();
     }
 
     return value;
