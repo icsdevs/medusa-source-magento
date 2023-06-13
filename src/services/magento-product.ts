@@ -45,7 +45,7 @@ class MagentoProductService extends TransactionBaseService {
     this.defaultShippingProfileId = "";
   }
 
-  async create (productData: any): Promise<void> {
+  async create (productData: any, attributeData: any): Promise<void> {
     return this.atomicPhase_(async (manager) => {
 
        //check if product exists
@@ -58,7 +58,7 @@ class MagentoProductService extends TransactionBaseService {
 
       if (existingProduct) {
         //update the product instead
-        return this.update(productData, existingProduct);
+        return this.update(productData, existingProduct, attributeData);
       } else {
         //check if it's a variant
         const existingVariant: ProductVariant = await this.productVariantService_
@@ -74,7 +74,7 @@ class MagentoProductService extends TransactionBaseService {
       //retrieve store's currencies
       await this.getCurrencies();
 
-      const normalizedProduct = this.normalizeProduct(productData);
+      const normalizedProduct = this.normalizeProduct(productData, attributeData);
       normalizedProduct.profile_id = await this.getDefaultShippingProfile();
 
       if (productData.extension_attributes?.category_links) {
@@ -153,13 +153,13 @@ class MagentoProductService extends TransactionBaseService {
     })
   }
 
-  async update (productData: any, existingProduct: Product): Promise<void> {
+  async update (productData: any, existingProduct: Product, attributeData: any): Promise<void> {
     return this.atomicPhase_(async (manager) => {
 
       //retrieve store's currencies
       await this.getCurrencies();
 
-      const normalizedProduct = this.normalizeProduct(productData);
+      const normalizedProduct = this.normalizeProduct(productData, attributeData);
       let productOptions = existingProduct.options;
 
       if (productData.extension_attributes?.category_links) {
@@ -380,15 +380,24 @@ class MagentoProductService extends TransactionBaseService {
     return product;
   }
 
-  parseCustomAttributeValue(product: Record<string, any>, attributeCode: string): any {
-    return product.custom_attributes?.find((attribute) => attribute.attribute_code === attributeCode)?.value || '';
+  parseCustomAttributeValue(product: Record<string, any>,  attributeData: any, attributeCode: string): any {
+    const value = product.custom_attributes?.find((attribute) => attribute.attribute_code === attributeCode)?.value || '';
+
+    const attributeInfo = attributeData[attributeCode];
+    if (!attributeInfo) {
+      return value;
+    }
+
+    if (attributeInfo.frontend_input === 'select') {
+      return attributeInfo.find(item => item.value === value).label;
+    }
   }
 
-  normalizeProduct(product: Record<string, any>): any {
+  normalizeProduct(product: Record<string, any>, attributeData: any): any {
     return {
       title: product.name,
       handle: product.custom_attributes?.find((attribute) => attribute.attribute_code === 'url_key')?.value,
-      description: this.removeHtmlTags(this.parseCustomAttributeValue(product, 'description')),
+      description: this.removeHtmlTags(this.parseCustomAttributeValue(product, attributeData, 'description')),
       type: {
         value: product.type_id
       },
@@ -399,12 +408,12 @@ class MagentoProductService extends TransactionBaseService {
       options: [],
       collection_id: null,
       metadata: {
-        short_description: this.removeHtmlTags(this.parseCustomAttributeValue(product, 'short_description')),
-        hardiness: this.parseCustomAttributeValue(product, 'hardiness'),
-        flower_colour: this.parseCustomAttributeValue(product, 'flower_colour'),
-        flowering_period: this.parseCustomAttributeValue(product, 'flowering_period'),
-        fast_slow_growing: this.parseCustomAttributeValue(product, 'fast_slow_growing'),
-        delivery_time_scale: this.parseCustomAttributeValue(product, 'delivery_time_scale'),
+        short_description: this.removeHtmlTags(this.parseCustomAttributeValue(product, attributeData, 'short_description')),
+        hardiness: this.parseCustomAttributeValue(product, attributeData, 'hardiness'),
+        flower_colour: this.parseCustomAttributeValue(product, attributeData, 'flower_colour'),
+        flowering_period: this.parseCustomAttributeValue(product, attributeData, 'flowering_period'),
+        fast_slow_growing: this.parseCustomAttributeValue(product, attributeData, 'fast_slow_growing'),
+        delivery_time_scale: this.parseCustomAttributeValue(product, attributeData, 'delivery_time_scale'),
       }
     };
   }

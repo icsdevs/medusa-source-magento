@@ -91,11 +91,11 @@ class MagentoClientService extends TransactionBaseService {
   }
 
   getAttribute(code: string) {
-    console.log(`Retrieving attribute ${code}`);
-    this.sendRequest(`/products/attributes/${code}`)
-        .then((response) => {
-          console.log(JSON.stringify(response.data));
-        });
+    return new Promise((resolve, reject) => {
+      this.sendRequest(`/products/attributes/${code}`)
+          .then((response) => resolve(response.data))
+          .catch(() => reject());
+    });
   }
 
   async retrieveProducts(type?: MagentoProductTypes, lastUpdatedTime?: string, filters?: MagentoFilters[][]) : Promise<Record<string, any>[]> {

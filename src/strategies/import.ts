@@ -88,7 +88,15 @@ class ImportStrategy extends AbstractBatchJobStrategy {
       this.logger_.info(`No categories have been imported or updated.`)
     }
 
-    this.magentoClientService_.getAttribute('hardiness');
+    this.logger_.info("Fetching custom attribute data");
+    const attributeData = {
+      short_description: await this.magentoClientService_.getAttribute('short_description'),
+      hardiness: await this.magentoClientService_.getAttribute('hardiness'),
+      flower_colour: await this.magentoClientService_.getAttribute('flower_colour'),
+      flowering_period: await this.magentoClientService_.getAttribute('flowering_period'),
+      fast_slow_growing: await this.magentoClientService_.getAttribute('fast_slow_growing'),
+      delivery_time_scale: await this.magentoClientService_.getAttribute('delivery_time_scale'),
+    };
 
     //retrieve configurable products
     this.logger_.info('Importing configurable products from Magento...');
@@ -97,8 +105,7 @@ class ImportStrategy extends AbstractBatchJobStrategy {
 
     for (let product of products) {
       try {
-        await this.magentoProductService_
-          .create(product);
+        await this.magentoProductService_.create(product, attributeData);
       } catch (error) {
         this.logger_.error("Error creating configurable product", error);
       }
@@ -111,8 +118,7 @@ class ImportStrategy extends AbstractBatchJobStrategy {
 
     for (let product of simpleProducts) {
       try {
-        await this.magentoProductService_
-            .create(product);
+        await this.magentoProductService_.create(product, attributeData);
       } catch (error) {
         this.logger_.error("Error creating simple product", error);
       }
