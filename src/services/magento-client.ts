@@ -147,8 +147,8 @@ class MagentoClientService extends TransactionBaseService {
         }
 
         for (let i = 0; i < data.items.length; i++) {
-          if (i > 10) { continue; } // temporary
-          //if (data.items[i].sku != "162827") { continue; } // temporary
+          //if (i > 10) { continue; } // temporary
+          if (data.items[i].sku != "162827") { continue; } // temporary
           const item = data.items[i];
 
           console.log(`[${i}/${data.items.length}]: Processing SKU ${item.sku}`);

@@ -388,9 +388,13 @@ class MagentoProductService extends TransactionBaseService {
       return value;
     }
 
+    console.log(attributeCode);
+    console.log(JSON.stringify(attributeInfo));
     if (attributeInfo.frontend_input === 'select') {
       return attributeInfo.find(item => item.value === value).label;
     }
+
+    return value;
   }
 
   normalizeProduct(product: Record<string, any>, attributeData: any): any {
