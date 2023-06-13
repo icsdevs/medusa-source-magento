@@ -381,6 +381,7 @@ class MagentoProductService extends TransactionBaseService {
   }
 
   normalizeProduct(product: Record<string, any>): any {
+    console.log(product.custom_attributes);
     return {
       title: product.name,
       handle: product.custom_attributes?.find((attribute) => attribute.attribute_code === 'url_key')?.value,
@@ -393,7 +394,10 @@ class MagentoProductService extends TransactionBaseService {
       images: product.media_gallery_entries?.map((img) => img.url) || [],
       thumbnail: product.media_gallery_entries?.find((img) => img.types.includes('thumbnail'))?.url,
       options: [],
-      collection_id: null
+      collection_id: null,
+      metadata: {
+        short_description: this.removeHtmlTags(product.custom_attributes?.find((attribute) => attribute.attribute_code === 'short_description')?.value || '')
+      }
     };
   }
 
@@ -409,7 +413,6 @@ class MagentoProductService extends TransactionBaseService {
      *                     }
      *                 }
      */
-    console.log(variant.custom_attributes);
 
     return {
       title: variant.name,
@@ -433,7 +436,6 @@ class MagentoProductService extends TransactionBaseService {
       }),
       metadata: {
         magento_id: variant.id,
-        short_description: 'test',
       }
     }
   }
