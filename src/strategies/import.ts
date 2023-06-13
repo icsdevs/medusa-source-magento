@@ -75,7 +75,7 @@ class ImportStrategy extends AbstractBatchJobStrategy {
 
     // retrieve categories
     this.logger_.info('Importing categories from Magento...');
-    const { data } = await this.magentoClientService_.retrieveCategories();//lastUpdatedTime);
+    const { data } = await this.magentoClientService_.retrieveCategories(lastUpdatedTime);
     data.items.map(async (category) => {
       return this.magentoCategoryService_.create(category);
     })
