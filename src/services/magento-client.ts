@@ -90,6 +90,14 @@ class MagentoClientService extends TransactionBaseService {
     this.defaultImagePrefix_ = options.image_prefix
   }
 
+  getAttribute(code: string) {
+    console.log(`Retrieving attribute ${code}`);
+    this.sendRequest(`/products/attributes/${code}`)
+        .then((response) => {
+          console.log(JSON.stringify(response.data));
+        });
+  }
+
   async retrieveProducts(type?: MagentoProductTypes, lastUpdatedTime?: string, filters?: MagentoFilters[][]) : Promise<Record<string, any>[]> {
     const searchCriteria: SearchCriteria = {
       currentPage: 1,
@@ -132,33 +140,39 @@ class MagentoClientService extends TransactionBaseService {
       .then(async ({ data }) => {
         await this.retrieveDefaultConfigs();
         let options;
+        const items = [];
 
         if (type === MagentoProductTypes.CONFIGURABLE) {
           options = await this.retrieveOptions();
         }
 
         for (let i = 0; i < data.items.length; i++) {
+          if (i > 10) { continue; } // temporary
           //if (data.items[i].sku != "162827") { continue; } // temporary
-          console.log(`[${i}/${data.items.length}]: Processing SKU ${data.items[i].sku}`);
+          const item = data.items[i];
 
-          data.items[i].media_gallery_entries = data.items[i].media_gallery_entries?.map((entry) => {
+          console.log(`[${i}/${data.items.length}]: Processing SKU ${item.sku}`);
+
+          item.media_gallery_entries = item.media_gallery_entries?.map((entry) => {
             entry.url = `${this.defaultImagePrefix_}${entry.file}`
 
             return entry
           })
 
-          if (data.items[i].extension_attributes?.configurable_product_options) {
-            data.items[i].extension_attributes?.configurable_product_options.forEach((option) => {
+          if (item.extension_attributes?.configurable_product_options) {
+            item.extension_attributes?.configurable_product_options.forEach((option) => {
               option.values = options.find((o) => o.attribute_id == option.attribute_id)?.options || []
             })
           }
 
           if (type === MagentoProductTypes.SIMPLE) {
-              data.items[i].stockData = await this.retrieveInventoryData(data.items[i].sku)
+              item.stockData = await this.retrieveInventoryData(data.items[i].sku)
           }
+
+          items.push(item);
         }
 
-        return data.items;
+        return items;
       })
   }
 

@@ -88,9 +88,10 @@ class ImportStrategy extends AbstractBatchJobStrategy {
       this.logger_.info(`No categories have been imported or updated.`)
     }
 
-    this.logger_.info('Importing configurable products from Magento...');
+    this.magentoClientService_.getAttribute('hardiness');
 
     //retrieve configurable products
+    this.logger_.info('Importing configurable products from Magento...');
     const products = await this.magentoClientService_.retrieveProducts(MagentoProductTypes.CONFIGURABLE, lastUpdatedTime);
     this.logger_.info("All configurable products successfully retrieved");
 
@@ -103,9 +104,8 @@ class ImportStrategy extends AbstractBatchJobStrategy {
       }
     }
 
-    this.logger_.info('Importing simple products from Magento...');
-
     //retrieve simple products to insert those that don't belong to a configurable product
+    this.logger_.info('Importing simple products from Magento...');
     const simpleProducts = await this.magentoClientService_.retrieveProducts(MagentoProductTypes.SIMPLE, lastUpdatedTime);
     this.logger_.info("All simple products successfully retrieved");
 
