@@ -89,7 +89,9 @@ class ImportStrategy extends AbstractBatchJobStrategy {
     // retrieve custom field data
     this.logger_.info("Fetching custom attribute data...");
     const attributeData = {};
-    for (const field of this.magentoClientService_.getCustomFields()) {
+    //const customFields = this.magentoClientService_.getCustomFields();
+    const customFields = process.env.CUSTOM_FIELDS.split(',');
+    for (const field of customFields) {
       this.logger_.info(`Fetching custom field ${field}`);
       attributeData[field] = await this.magentoClientService_.getAttribute(field);
     }
