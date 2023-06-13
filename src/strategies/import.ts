@@ -88,7 +88,7 @@ class ImportStrategy extends AbstractBatchJobStrategy {
       this.logger_.info(`No categories have been imported or updated.`)
     }
 
-    this.logger_.info("Fetching custom attribute data");
+    this.logger_.info("Fetching custom attribute data...");
     const attributeData = {
       short_description: await this.magentoClientService_.getAttribute('short_description'),
       hardiness: await this.magentoClientService_.getAttribute('hardiness'),
