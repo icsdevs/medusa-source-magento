@@ -13,6 +13,7 @@ export type PluginOptions = {
   access_token: string;
   access_token_secret: string;
   image_prefix?: string;
+  custom_fields: string;
 }
 
 type InjectedDependencies = {
@@ -48,13 +49,15 @@ class MagentoClientService extends TransactionBaseService {
   protected defaultStoreId_: string;
   protected defaultCurrencyCode_: string;
   protected defaultImagePrefix_: string;
+  protected customFields_: string[];
 
   constructor(container: InjectedDependencies, options: PluginOptions) {
     super(container);
-    this.manager_ = container.manager
+    this.manager_ = container.manager;
     this.logger_ = container.logger;
     this.options_ = options;
-    this.apiBaseUrl_ = `${options.magento_url}/rest/default/V1`
+    this.apiBaseUrl_ = `${options.magento_url}/rest/default/V1`;
+    this.customFields_ = options.custom_fields.split(',');
 
     this.client_ = axios.create({
       timeout: 30000,
@@ -88,6 +91,10 @@ class MagentoClientService extends TransactionBaseService {
     })*/
 
     this.defaultImagePrefix_ = options.image_prefix
+  }
+
+  getCustomFields () {
+    return this.customFields_;
   }
 
   getAttribute(code: string) {

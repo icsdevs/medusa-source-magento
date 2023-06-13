@@ -86,15 +86,13 @@ class ImportStrategy extends AbstractBatchJobStrategy {
       this.logger_.info(`No categories have been imported or updated.`)
     }
 
+    // retrieve custom field data
     this.logger_.info("Fetching custom attribute data...");
-    const attributeData = {
-      short_description: await this.magentoClientService_.getAttribute('short_description'),
-      hardiness: await this.magentoClientService_.getAttribute('hardiness'),
-      flower_colour: await this.magentoClientService_.getAttribute('flower_colour'),
-      flowering_period: await this.magentoClientService_.getAttribute('flowering_period'),
-      fast_slow_growing: await this.magentoClientService_.getAttribute('fast_slow_growing'),
-      delivery_time_scale: await this.magentoClientService_.getAttribute('delivery_time_scale'),
-    };
+    const attributeData = {};
+    for (const field of this.magentoClientService_.getCustomFields()) {
+      this.logger_.info(`Fetching custom field ${field}`);
+      attributeData[field] = await this.magentoClientService_.getAttribute(field);
+    }
 
     // retrieve configurable products
     this.logger_.info('Importing configurable products from Magento...');
