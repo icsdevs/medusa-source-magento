@@ -7,6 +7,7 @@ import {
 } from '@medusajs/medusa';
 
 import { EntityManager } from 'typeorm';
+import * as console from "console";
 
 type InjectedDependencies = {
   magentoClientService: MagentoClientService;
@@ -74,13 +75,17 @@ class MagentoCategoryService extends TransactionBaseService {
         .withTransaction()
         .listAndCount({});
 
-    console.log("EXISTING CATEGORYIES:", JSON.stringify(existingCategories));
+    console.log("EXISTING CATEGORIES:", JSON.stringify(existingCategories));
+
+    return null;
   }
 
   async normalizeCollection(category: any): Promise<any> {
-    console.log(JSON.stringify(category));
     if (category.parent_id) {
+      console.log(`searching for parent category ${category.parent_id}`);
       await this.findParentCategoryId(category.parent_id);
+    } else {
+      console.log("does not have parent category");
     }
 
     return {
