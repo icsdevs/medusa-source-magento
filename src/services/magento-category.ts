@@ -52,25 +52,24 @@ class MagentoCategoryService extends TransactionBaseService {
 
   populateParentCategories(categories: any[]) {
     return this.atomicPhase_(async (manager) => {
-      for (const cat of categories) {
-        const ec = await this.productCategoryService_
-            .withTransaction(manager)
-            .retrieveByHandle(this.getHandle(cat));
-        const update = this.normalizeCollection(cat);
-        if (cat.parent_id) {
-          console.log("Processing category with parent");
-          const pc = categories.find(p => p.id === cat.parent_id);
-          if (pc) {
-            const epc = await this.productCategoryService_
-                .withTransaction(manager)
-                .retrieveByHandle(this.getHandle(pc));
-            update.parent_category_id = epc.id;
+      const childCategories = categories.filter(c => c.parent_id !== null);
 
-            this.productCategoryService_
-                .withTransaction(manager)
-                .update(ec.id, update);
-          }
+      for (const magentoCategory of childCategories) {
+        const medusaCategory= await this.productCategoryService_.withTransaction(manager).retrieveByHandle(this.getHandle(cat));
+        const magentoParent = categories.find(c => c.id === magentoCategory.parent_id);
+        if (!magentoParent) {
+          continue;
         }
+        const medusaParentCategory = await this.productCategoryService_.withTransaction(manager).retrieveByHandle(this.getHandle(magentoParent));
+        if (!medusaParentCategory) {
+          continue;
+        }
+        console.log(`Updating parent category ID for ${medusaCategory.id} to ${medusaParentCategory.id}`);
+
+        const update = this.normalizeCollection(magentoCategory);
+        update.parent_category_id = medusaParentCategory.id;
+
+        this.productCategoryService_.withTransaction(manager).update(medusaCategory.id, update);
       }
     });
   }
