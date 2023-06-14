@@ -74,6 +74,7 @@ class MagentoCategoryService extends TransactionBaseService {
       }
 
       if (Object.values(update).length) {
+        console.log(`Updating ${existingCollection.id} with data ${JSON.stringify(update)}`);
         await this.productCategoryService_
             .withTransaction(manager)
             .update(existingCollection.id, update)
