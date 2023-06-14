@@ -69,9 +69,11 @@ class MagentoCategoryService extends TransactionBaseService {
   }
 
   normalizeCollection (category: any): any {
+    console.log(JSON.stringify(category));
     return {
       name: category.name,
       handle: category.custom_attributes.find((attribute) => attribute.attribute_code === 'url_key')?.value,
+      is_active: true,
       metadata: {
         magento_id: category.id
       }
