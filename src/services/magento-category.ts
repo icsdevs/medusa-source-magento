@@ -71,6 +71,8 @@ class MagentoCategoryService extends TransactionBaseService {
   }
 
   async findParentCategoryId(magentoParentCategoryId: number) {
+    console.log("starting", magentoParentCategoryId);
+
     const existingCategories = await this.productCategoryService_
         .withTransaction()
         .listAndCount({});
