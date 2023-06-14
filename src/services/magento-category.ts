@@ -66,7 +66,7 @@ class MagentoCategoryService extends TransactionBaseService {
         const magentoParent = categories.find(c => c.id === category.parent_id);
         if (magentoParent) {
           const medusaParentCategory = await this.productCategoryService_.withTransaction(manager).retrieveByHandle(this.getHandle(magentoParent));
-          if (medusaParentCategory) {
+          if (medusaParentCategory && existingCollection['parent_category_id'] !== medusaParentCategory.id) {
             update['parent_category_id'] = medusaParentCategory.id;
           }
         }
@@ -85,7 +85,6 @@ class MagentoCategoryService extends TransactionBaseService {
       name: category.name,
       handle: category.custom_attributes.find((attribute) => attribute.attribute_code === 'url_key')?.value,
       is_active: true,
-      parent_category_id: null,
     }
   }
 
