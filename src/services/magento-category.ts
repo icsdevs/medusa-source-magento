@@ -55,7 +55,7 @@ class MagentoCategoryService extends TransactionBaseService {
       const childCategories = categories.filter(c => c.parent_id !== null);
 
       for (const magentoCategory of childCategories) {
-        const medusaCategory= await this.productCategoryService_.withTransaction(manager).retrieveByHandle(this.getHandle(cat));
+        const medusaCategory= await this.productCategoryService_.withTransaction(manager).retrieveByHandle(this.getHandle(magentoCategory));
         const magentoParent = categories.find(c => c.id === magentoCategory.parent_id);
         if (!magentoParent) {
           continue;
