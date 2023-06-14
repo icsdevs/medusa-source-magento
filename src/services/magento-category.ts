@@ -73,10 +73,10 @@ class MagentoCategoryService extends TransactionBaseService {
   async findParentCategoryId(magentoParentCategoryId: number) {
     console.log("starting", magentoParentCategoryId);
 
-    const existingCategories = await this.productCategoryService_
-        .listAndCount({});
-
-    console.log("EXISTING CATEGORIES:", JSON.stringify(existingCategories));
+    this.productCategoryService_.listAndCount({})
+        .then((response) => {
+          console.log(response[0][0]);
+        });
   }
 
   async normalizeCollection(category: any): Promise<any> {
