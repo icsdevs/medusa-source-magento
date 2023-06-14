@@ -78,6 +78,7 @@ class MagentoCategoryService extends TransactionBaseService {
   }
 
   async normalizeCollection(category: any): Promise<any> {
+    console.log(JSON.stringify(category));
     if (category.parent_id) {
       await this.findParentCategoryId(category.parent_id);
     }
