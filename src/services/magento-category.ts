@@ -3,6 +3,7 @@ import {
   ProductCollection,
   TransactionBaseService,
   ProductCategoryService,
+  ProductCategory,
 } from '@medusajs/medusa';
 
 import { EntityManager } from 'typeorm';
@@ -40,7 +41,7 @@ class MagentoCategoryService extends TransactionBaseService {
       }
 
       //create collection
-      const categoryData = this.normalizeCollection(category);
+      const categoryData = await this.normalizeCollection(category);
 
       await this.productCategoryService_
         .withTransaction(manager)
@@ -50,7 +51,7 @@ class MagentoCategoryService extends TransactionBaseService {
 
   async update (category: any, existingCollection: ProductCollection): Promise<void> {
     return this.atomicPhase_(async (manager) => {
-      const collectionData = this.normalizeCollection(category);
+      const collectionData = await this.normalizeCollection(category);
 
       const update = {}
 
@@ -68,8 +69,19 @@ class MagentoCategoryService extends TransactionBaseService {
     })
   }
 
-  normalizeCollection (category: any): any {
-    console.log(JSON.stringify(category));
+  async findParentCategoryId(magentoParentCategoryId: number) {
+    const existingCategories = await this.productCategoryService_
+        .withTransaction()
+        .listAndCount({});
+
+    console.log("EXISTING CATEGORYIES:", JSON.stringify(existingCategories));
+  }
+
+  async normalizeCollection(category: any): Promise<any> {
+    if (category.parent_id) {
+      await this.findParentCategoryId(category.parent_id);
+    }
+
     return {
       name: category.name,
       handle: category.custom_attributes.find((attribute) => attribute.attribute_code === 'url_key')?.value,
