@@ -42,7 +42,7 @@ class MagentoCategoryService extends TransactionBaseService {
       }
 
       //create collection
-      const categoryData = await this.normalizeCollection(category);
+      const categoryData = this.normalizeCollection(category);
 
       await this.productCategoryService_
         .withTransaction(manager)
@@ -52,7 +52,7 @@ class MagentoCategoryService extends TransactionBaseService {
 
   async update (category: any, existingCollection: ProductCollection): Promise<void> {
     return this.atomicPhase_(async (manager) => {
-      const collectionData = await this.normalizeCollection(category);
+      const collectionData = this.normalizeCollection(category);
 
       const update = {}
 
@@ -70,30 +70,27 @@ class MagentoCategoryService extends TransactionBaseService {
     })
   }
 
-  async findParentCategoryId(magentoParentCategoryId: number) {
-    console.log("starting", magentoParentCategoryId);
+  async populateParentCategories(categories: any[]) {
+    for (const cat of categories) {
+      const ec = await this.productCategoryService_.retrieveByHandle(this.getHandle(cat));
+      const update = this.normalizeCollection(cat);
+      if (cat.parent_id) {
+        const pc = categories.find(p => p.id === cat.parent_id);
+        const epc = await this.productCategoryService_.retrieveByHandle(this.getHandle(pc));
 
-    this.productCategoryService_.listAndCount({})
-        .then((response) => {
-          console.log(response[0][0]);
-        });
+        update.parent_category_id = epc.id;
+      }
+
+      this.productCategoryService_.update(ec.id, update);
+    }
   }
 
-  async normalizeCollection(category: any): Promise<any> {
-    if (category.parent_id) {
-      console.log(`searching for parent category ${category.parent_id}`);
-      await this.findParentCategoryId(category.parent_id);
-    } else {
-      console.log("does not have parent category");
-    }
-
+  normalizeCollection(category: any) {
     return {
       name: category.name,
       handle: category.custom_attributes.find((attribute) => attribute.attribute_code === 'url_key')?.value,
       is_active: true,
-      metadata: {
-        magento_id: category.id
-      }
+      parent_category_id: null,
     }
   }
 

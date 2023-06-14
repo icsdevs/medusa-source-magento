@@ -79,6 +79,7 @@ class ImportStrategy extends AbstractBatchJobStrategy {
     data.items.map(async (category) => {
       return await this.magentoCategoryService_.create(category);
     });
+    await this.magentoCategoryService_.populateParentCategories(data.items);
 
     if (data.items.length) {
       this.logger_.info(`${data.items.length} categories have been imported or updated successfully.`)
