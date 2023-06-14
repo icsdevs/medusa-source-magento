@@ -86,7 +86,7 @@ class MagentoCategoryService extends TransactionBaseService {
     return {
       name: category.name,
       handle: category.custom_attributes.find((attribute) => attribute.attribute_code === 'url_key')?.value,
-      is_active: true,
+      is_active: category.is_active,
     }
   }
 
