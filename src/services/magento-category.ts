@@ -30,7 +30,7 @@ class MagentoCategoryService extends TransactionBaseService {
     this.productCategoryService_ = container.productCategoryService;
   }
 
-  async create (category: any): Promise<void> {
+  async create (category: any, categories: any[]): Promise<void> {
     return this.atomicPhase_(async (manager) => {
       const existingCategory = await this.productCategoryService_
           .withTransaction(manager)
@@ -38,7 +38,7 @@ class MagentoCategoryService extends TransactionBaseService {
           .catch(() => undefined);
 
       if (existingCategory) {
-        return this.update(category, existingCategory);
+        return this.update(category, existingCategory, categories);
       }
 
       //create collection
@@ -50,31 +50,7 @@ class MagentoCategoryService extends TransactionBaseService {
     })
   }
 
-  async populateParentCategories(categories: any[]) {
-    const childCategories = categories.filter(c => c.parent_id !== null);
-
-    for (const magentoCategory of childCategories) {
-      await this.atomicPhase_(async (manager) => {
-        const medusaCategory = await this.productCategoryService_.withTransaction(manager).retrieveByHandle(this.getHandle(magentoCategory));
-        const magentoParent = categories.find(c => c.id === magentoCategory.parent_id);
-        if (!magentoParent) {
-          return;
-        }
-        const medusaParentCategory = await this.productCategoryService_.withTransaction(manager).retrieveByHandle(this.getHandle(magentoParent));
-        if (!medusaParentCategory) {
-          return;
-        }
-        console.log(`Updating parent category ID for ${medusaCategory.id} to ${medusaParentCategory.id}`);
-
-        const update = this.normalizeCollection(magentoCategory);
-        update.parent_category_id = medusaParentCategory.id;
-
-        await this.productCategoryService_.withTransaction(manager).update(medusaCategory.id, update);
-      });
-    }
-  }
-
-  async update (category: any, existingCollection: ProductCollection): Promise<void> {
+  async update (category: any, existingCollection: ProductCollection, categories: any[]): Promise<void> {
     return this.atomicPhase_(async (manager) => {
       const collectionData = this.normalizeCollection(category);
 
@@ -84,6 +60,12 @@ class MagentoCategoryService extends TransactionBaseService {
         if (collectionData[key] !== existingCollection[key]) {
           update[key] = collectionData[key]
         }
+      }
+
+      if (category.parent_id) {
+        const magentoParent = categories.find(c => c.id === category.parent_id);
+        const medusaParentCategory = await this.productCategoryService_.withTransaction(manager).retrieveByHandle(this.getHandle(magentoParent));
+        update['parent_category_id'] = medusaParentCategory.id;
       }
 
       if (Object.values(update).length) {
