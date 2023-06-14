@@ -31,14 +31,14 @@ class MagentoCategoryService extends TransactionBaseService {
   }
 
   async create (category: any, categories: any[]): Promise<void> {
-    return this.atomicPhase_(async (manager) => {
+    return await this.atomicPhase_(async (manager) => {
       const existingCategory = await this.productCategoryService_
           .withTransaction(manager)
           .retrieveByHandle(this.getHandle(category))
           .catch(() => undefined);
 
       if (existingCategory) {
-        return this.update(category, existingCategory, categories);
+        return await this.update(category, existingCategory, categories);
       }
 
       //create collection
@@ -51,7 +51,7 @@ class MagentoCategoryService extends TransactionBaseService {
   }
 
   async update (category: any, existingCollection: ProductCollection, categories: any[]): Promise<void> {
-    return this.atomicPhase_(async (manager) => {
+    return await this.atomicPhase_(async (manager) => {
       const collectionData = this.normalizeCollection(category);
 
       const update = {}
