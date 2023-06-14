@@ -75,12 +75,15 @@ class MagentoCategoryService extends TransactionBaseService {
       const ec = await this.productCategoryService_.retrieveByHandle(this.getHandle(cat));
       const update = this.normalizeCollection(cat);
       if (cat.parent_id) {
+        console.log("Processing category with parent");
         const pc = categories.find(p => p.id === cat.parent_id);
-        const epc = await this.productCategoryService_.retrieveByHandle(this.getHandle(pc));
-
-        update.parent_category_id = epc.id;
+        if (pc) {
+          const epc = await this.productCategoryService_.retrieveByHandle(this.getHandle(pc));
+          update.parent_category_id = epc.id;
+        }
       }
 
+      console.log(JSON.stringify(update));
       this.productCategoryService_.update(ec.id, update);
     }
   }
