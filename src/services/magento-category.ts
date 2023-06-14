@@ -50,6 +50,31 @@ class MagentoCategoryService extends TransactionBaseService {
     })
   }
 
+  populateParentCategories(categories: any[]) {
+    return this.atomicPhase_(async (manager) => {
+      for (const cat of categories) {
+        const ec = await this.productCategoryService_
+            .withTransaction(manager)
+            .retrieveByHandle(this.getHandle(cat));
+        const update = this.normalizeCollection(cat);
+        if (cat.parent_id) {
+          console.log("Processing category with parent");
+          const pc = categories.find(p => p.id === cat.parent_id);
+          if (pc) {
+            const epc = await this.productCategoryService_
+                .withTransaction(manager)
+                .retrieveByHandle(this.getHandle(pc));
+            update.parent_category_id = epc.id;
+
+            this.productCategoryService_
+                .withTransaction(manager)
+                .update(ec.id, update);
+          }
+        }
+      }
+    });
+  }
+
   async update (category: any, existingCollection: ProductCollection): Promise<void> {
     return this.atomicPhase_(async (manager) => {
       const collectionData = this.normalizeCollection(category);
@@ -68,24 +93,6 @@ class MagentoCategoryService extends TransactionBaseService {
             .update(existingCollection.id, update)
       }
     })
-  }
-
-  async populateParentCategories(categories: any[]) {
-    for (const cat of categories) {
-      const ec = await this.productCategoryService_.retrieveByHandle(this.getHandle(cat));
-      const update = this.normalizeCollection(cat);
-      if (cat.parent_id) {
-        console.log("Processing category with parent");
-        const pc = categories.find(p => p.id === cat.parent_id);
-        if (pc) {
-          const epc = await this.productCategoryService_.retrieveByHandle(this.getHandle(pc));
-          update.parent_category_id = epc.id;
-        }
-      }
-
-      console.log(JSON.stringify(update));
-      this.productCategoryService_.update(ec.id, update);
-    }
   }
 
   normalizeCollection(category: any) {
