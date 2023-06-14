@@ -87,9 +87,8 @@ class ImportStrategy extends AbstractBatchJobStrategy {
     }
 
     // retrieve custom field data
-    this.logger_.info("Fetching custom attribute data...");
+    /*this.logger_.info("Fetching custom attribute data...");
     const attributeData = {};
-    //const customFields = this.magentoClientService_.getCustomFields();
     const customFields = process.env.CUSTOM_FIELDS.split(',');
     for (const field of customFields) {
       this.logger_.info(`Fetching custom field ${field}`);
@@ -124,9 +123,9 @@ class ImportStrategy extends AbstractBatchJobStrategy {
       this.logger_.info(`${products.length + simpleProducts.length} products have been imported or updated successfully.`)
     } else {
       this.logger_.info(`No products have been imported or updated.`)
-    }
+    }*/
 
-    await this.updateBuildTime(store);
+    //await this.updateBuildTime(store);
   }
 
   async getBuildTime(store?: Store|null): Promise<string|null> {
