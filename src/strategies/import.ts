@@ -87,7 +87,7 @@ class ImportStrategy extends AbstractBatchJobStrategy {
     }
 
     // retrieve custom field data
-    this.logger_.info("Fetching custom attribute data...");
+    /*this.logger_.info("Fetching custom attribute data...");
     const attributeData = {};
     const customFields = process.env.CUSTOM_FIELDS.split(',');
     for (const field of customFields) {
@@ -125,7 +125,7 @@ class ImportStrategy extends AbstractBatchJobStrategy {
       this.logger_.info(`No products have been imported or updated.`)
     }
 
-    await this.updateBuildTime(store);
+    await this.updateBuildTime(store);*/
   }
 
   async getBuildTime(store?: Store|null): Promise<string|null> {
